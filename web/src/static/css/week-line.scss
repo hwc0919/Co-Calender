@@ -1,0 +1,39 @@
+.week-line {
+    display: flex;
+    justify-content: space-evenly;
+    padding: 10upx 0;
+}
+
+.day-block {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+    width: $day-cell-width;
+    height: $day-cell-height;
+}
+
+.day-block span {
+    display: inline-block;
+}
+
+.day-block span:nth-child(1) {
+    height: 20%;
+}
+
+.day-block span:nth-child(2) {
+    height: 40%;
+}
+
+.day-block span:nth-child(3) {
+    height: 40%;
+}
+
+.today {
+    border-radius: 50%;
+    background-color: $today-bgcolor;
+    color: white;
+}
+
+.gray {
+    color: gray;
+}
