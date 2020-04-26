@@ -6,9 +6,10 @@ import traceback
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from . import db
-from .mvm import Friendship, UserSchlist
+from .mvm import Friendship, UserSchlist, FriendReq
 
-__all__ = ['User', 'Role', 'Schedule', 'Schlist', 'Friendship', 'UserSchlist', '_tables']
+__all__ = ['User', 'Role', 'Schedule', 'Schlist',
+           'Friendship', 'UserSchlist', 'FriendReq', '_tables']
 
 
 class DataUtils(object):
@@ -50,7 +51,7 @@ class User(db.Model):
     email = db.Column(db.String(32), unique=True, index=True)
     gender = db.Column(db.Enum('M', 'F', ''), default='')
     age = db.Column(db.SmallInteger)
-    register_time = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
+    register_dt = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
     frigroups = db.Column(db.PickleType, nullable=False, default=['默认分组'])
 
     # OvM
@@ -76,8 +77,17 @@ class User(db.Model):
                                  lazy='dynamic',
                                  cascade='all, delete-orphan')
 
-    # sent_frireqs
-    # recv_frireqs
+    sent_frireqs = db.relationship('FriendReq',
+                                   foreign_keys=[FriendReq.from_uid],
+                                   backref=db.backref('from_user', lazy='joined'),
+                                   lazy='dynamic',
+                                   cascade='all, delete-orphan')
+    recv_frireqs = db.relationship('FriendReq',
+                                   foreign_keys=[FriendReq.to_uid],
+                                   backref=db.backref('to_user', lazy='joined'),
+                                   lazy='dynamic',
+                                   cascade='all, delete-orphan')
+
     # sent_schreqs
     # recv_schreqs
 
@@ -106,9 +116,9 @@ class User(db.Model):
         """Add bi-directional relations in `Friendship`"""
         to_uid = user if isinstance(user, int) else user.uid
         from_uid = self.uid
-        f1 = Friendship(from_uid=from_uid, to_uid=to_uid)
-        f2 = Friendship(from_uid=to_uid, to_uid=from_uid)
         try:
+            f1 = Friendship(from_uid=from_uid, to_uid=to_uid)
+            f2 = Friendship(from_uid=to_uid, to_uid=from_uid)
             db.session.add_all([f1, f2])
             db.session.commit()
             return True
@@ -127,6 +137,77 @@ class User(db.Model):
             return True
         except Exception as ex:
             db.session.rollback()
+            traceback.print_exc()
+            return False
+
+    def add_schedule(self, schedule):
+        schedule.owner = self
+        try:
+            db.session.commit()
+            return True
+        except Exception as ex:
+            db.session.rollback()
+            traceback.print_exc()
+            return False
+
+    def send_frireq(self, user):
+        to_uid = user if isinstance(user, int) else user.uid
+        req = self.sent_frireqs.filter_by(to_uid=to_uid).first()
+        if req is None:
+            req = FriendReq(from_uid=self.uid, to_uid=to_uid)
+        else:
+            req.create_dt = datetime.datetime.utcnow()
+            req.status = 'P'
+        try:
+            db.session.add(req)
+            db.session.commit()
+            return True
+        except Exception as ex:
+            db.session.rollback()
+            return False
+
+    def accept_frireq(self, req):
+        if req.status != 'P':
+            return False
+        req.status = 'A'
+        try:
+            db.session.commit()
+            return self.add_friend(req.from_user)
+        except Exception as ex:
+            traceback.print_exc()
+            return False
+
+    def decline_frireq(self, req):
+        if req.status != 'P':
+            return False
+        req.status = 'D'
+        try:
+            db.session.commit()
+            return True
+        except Exception as ex:
+            traceback.print_exc()
+            return False
+
+    def omit_frireq(self, req):
+        if req.status != 'P':
+            return False
+        req.status = 'O'
+        try:
+            db.session.commit()
+            return True
+        except Exception as ex:
+            traceback.print_exc()
+            return False
+
+    def omit_all_frireqs(self):
+        reqs = self.recv_frireqs.filter_by(status='P').all()
+        for req in reqs:
+            req.status = 'O'
+        try:
+            db.session.add_all(reqs)
+            db.session.commit()
+            return True
+        except Exception as ex:
             traceback.print_exc()
             return False
 
@@ -160,13 +241,16 @@ class Schedule(db.Model):
                     default=DataUtils.gen_id('schedules', 'sid'))
     title = db.Column(db.String(32), nullable=False, default='未命名')
     detail = db.Column(db.Text)
-    start_time = db.Column(db.DateTime, nullable=False)
+    sdate = db.Column(db.Date, nullable=False, default=datetime.datetime.utcnow().date)
+    stime = db.Column(db.Time, default=datetime.datetime.utcnow().time)
     duration = db.Column(db.Interval, default=datetime.timedelta(hours=1))
     repeat = db.Column(db.String(128))
     alerm = db.Column(db.PickleType, nullable=False, default=[])
     privacy = db.Column(db.SmallInteger, nullable=False, default=SchPrivacy.FRIEND)
     owner_uid = db.Column(db.Integer, db.ForeignKey('users.uid'))
+    # backref: owner
     owner_slid = db.Column(db.Integer, db.ForeignKey('schlists.slid'))
+    # backref: owner_list
 
 
 class Schlist(db.Model):
@@ -177,6 +261,10 @@ class Schlist(db.Model):
     _id = db.Column(db.Integer, primary_key=True)
     slid = db.Column(db.Integer, unique=True, nullable=False, index=True,
                      default=DataUtils.gen_id('schlists', 'slid'))
+    create_dt = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow)
+    update_dt = db.Column(db.DateTime, nullable=False, default=datetime.datetime.utcnow,
+                          onupdate=datetime.datetime.utcnow)
+    closed = db.Column(db.Boolean, nullable=False, default=False)
 
     # OvM
     owner_uid = db.Column(db.Integer, db.ForeignKey('users.uid'))
@@ -196,5 +284,6 @@ _tables = {
     'schedules': Schedule,
     'schlists': Schlist,
     'friendships': Friendship,
-    'user_schlists': UserSchlist
+    'user_schlists': UserSchlist,
+    'friendreqs': FriendReq
 }
