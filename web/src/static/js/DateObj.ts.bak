@@ -1,0 +1,29 @@
+export class DateObj {
+    year: number;
+    month: number;
+    day: number;
+    dayOfWeek: number;
+    ID: string;
+    date: Date;
+
+    constructor(date: Date) {
+        this.year = date.getFullYear();
+        this.month = date.getMonth();
+        this.day = date.getDate();
+        this.dayOfWeek = date.getDay();
+        this.ID = `${this.year}-${this.month}-${this.day}`;
+        this.date = new Date(this.year, this.month, this.day);
+    }
+
+    public toLocaleDateString(): String {
+        return `${this.year}/${this.month + 1}/${this.day}`;
+    }
+
+    public equals(dateObj: DateObj | Date): Boolean {
+        return this.toLocaleDateString() === dateObj.toLocaleDateString();
+    }
+
+    public isToday(dateObj: DateObj | Date) {
+        return new Date().toLocaleDateString() === this.toLocaleDateString();
+    }
+}

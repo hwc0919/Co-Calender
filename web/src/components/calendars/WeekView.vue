@@ -1,29 +1,27 @@
 <template>
     <div class="week-view-wrapper">
-        <wd-header></wd-header>
-        <div class="week-line">
-            <span
-                class="day-block"
-                :class="{ today: dayObj.date == curD }"
-                v-for="(dayObj, ind) in calendar"
-                :key="`day-${ind}`"
-            >
+        <week-header></week-header>
+        <div class="one-week">
+            <day-block class="day-block" v-for="(dateObj, ind) in calendar" :dateObj="dateObj" :key="`day-${ind}`">
                 <span class="hasSchedule"></span>
-                <span class="date">{{ dayObj.date }}</span>
+                <span class="date">{{ dateObj.day }}</span>
                 <span class="lunar"></span>
-            </span>
+            </day-block>
         </div>
     </div>
 </template>
 
 
 <script>
-import WdHeader from './WdHeader';
+import WeekHeader from './WeekHeader';
+import DayBlock from './DayBlock';
+import { DateObj } from '@/static/js/DateObj';
 
 export default {
     name: 'MonthView',
     components: {
-        WdHeader
+        WeekHeader,
+        DayBlock
     },
     data() {
         let today = new Date();
@@ -39,15 +37,10 @@ export default {
 
         let iterDay = firstDayOfWeek;
         while (iterDay <= lastDayOfWeek) {
-            calendar.push({
-                month: iterDay.getMonth(),
-                date: iterDay.getDate(),
-                day: iterDay.getDay()
-            });
+            calendar.push(new DateObj(iterDay));
             iterDay.setDate(iterDay.getDate() + 1);
         }
         return {
-            curD: curD,
             calendar: calendar
         };
     }
@@ -55,9 +48,12 @@ export default {
 </script>
 
 <style lang="scss" scope>
-@import '@/static/css/week-line.scss';
-
 .week-view-wrapper {
-    padding: 0 10upx;
+}
+
+.one-week {
+    display: flex;
+    justify-content: space-evenly;
+    padding: 10upx 10upx;
 }
 </style>

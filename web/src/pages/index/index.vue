@@ -1,18 +1,36 @@
 <template>
     <view class="content">
         <head-menu :activeViewID="activeViewID" @switch-view="switchView($event)"></head-menu>
-        <keep-alive>
+        <!-- <keep-alive>
             <component :is="activeView"></component>
-        </keep-alive>
+        </keep-alive> -->
+
+        <month-view v-if="activeViewID === 0"></month-view>
+        <week-view v-else-if="activeViewID === 1"></week-view>
+        <day-view v-else-if="activeViewID === 2"></day-view>
+
+        <div class="corner-btn-group">
+            <button
+                v-show="!$store.state.selectDate.isToday()"
+                @click="$store.commit('selectToday')"
+                class="today-btn"
+                type="primary"
+            >
+                今
+            </button>
+            <button class="create-btn" type="default">
+                <uni-icons type="plusempty" size="30" color="$uni-color-primary"></uni-icons>
+            </button>
+        </div>
     </view>
 </template>
 
 <script>
-import HeadMenu from '../Header/HeadMenu';
-import MonthView from '../CalanderViews/MonthView';
-import WeekView from '../CalanderViews/WeekView';
-import DayView from '../CalanderViews/DayView';
-import ScheduleView from '../CalanderViews/ScheduleView';
+import HeadMenu from '@/components/headers/HeadMenu';
+import MonthView from '@/components/calendars/MonthView';
+import WeekView from '@/components/calendars/WeekView';
+import DayView from '@/components/calendars/DayView';
+import ScheduleView from '@/components/calendars/ScheduleView';
 
 export default {
     components: {
@@ -22,12 +40,6 @@ export default {
         DayView
     },
     data() {
-        let today = new Date();
-        let curY = today.getFullYear();
-        let curM = today.getMonth();
-        let curD = today.getDate();
-        let curWd = today.getDay();
-
         return {
             activeViewID: 0,
             availViews: [MonthView, WeekView, DayView, ScheduleView]
@@ -46,20 +58,40 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss" scope>
 .content {
     text-align: center;
-    height: 400upx;
+    height: 100%;
 }
 
-.logo {
-    height: 200upx;
-    width: 200upx;
-    margin-top: 200upx;
+.corner-btn-group {
+    position: absolute;
+    display: flex;
+    bottom: 40upx;
+    right: 40upx;
 }
 
-.title {
-    font-size: 36upx;
-    color: #8f8f94;
+.corner-btn-group button {
+    width: 100upx;
+    padding: 0;
+    height: 100upx;
+    text-align: center;
+    border-radius: 50%;
+    line-height: 100upx;
+    font-size: 45upx;
+    margin-left: 40upx;
+}
+
+.corner-btn-group button::after {
+    border: none;
+}
+
+.today-btn {
+    box-shadow: 0 0 5upx $uni-color-primary;
+}
+
+.create-btn {
+    background-color: white;
+    box-shadow: 0 0 5upx $uni-text-color-grey;
 }
 </style>
