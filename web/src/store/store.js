@@ -20,11 +20,11 @@ export const store = new Vuex.Store({
         month: month,
         day: day,
         dayOfWeek: dayOfWeek,
-        selectDate: new DateObj(today),
         calendars: {}
     },
     getters: {
         getMonthCalendar: (state) => (year, month) => {
+            console.log('get', year, month);
             while (month > 11) {
                 month -= 12;
                 year++;
@@ -37,6 +37,9 @@ export const store = new Vuex.Store({
                 state.calendars[year] = CalendarTool.calYearCalendar(year);
             }
             return state.calendars[year][month];
+        },
+        isToday(state) {
+            return state.day === state.todayObj.day && state.month === state.todayObj.month && state.year === state.todayObj.year;
         }
     },
     mutations: {
@@ -59,13 +62,12 @@ export const store = new Vuex.Store({
             }
         },
         selectDate(state, dateObj) {
-            state.selectDate = dateObj;
-        },
-        selectToday(state) {
-            state.selectDate = state.todayObj;
+            state.year = dateObj.year;
+            state.month = dateObj.month;
+            state.day = dateObj.day;
+            state.dayOfWeek = dateObj.dayOfWeek;
         },
         resetToToday(state) {
-            state.selectDate = state.todayObj;
             state.year = state.todayObj.year;
             state.month = state.todayObj.month;
             state.day = state.todayObj.day;

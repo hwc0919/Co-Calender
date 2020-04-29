@@ -2,19 +2,11 @@
     <div :class="['header', { 'header-transition': showViewMenu }]">
         <div class="header-1">
             <div class="left-info-group">
-                <span class="year-month">
-                    {{ $store.state.year }}年{{ $store.state.month + 1 }}月
-                </span>
+                <span class="year-month"> {{ $store.state.year }}年{{ $store.state.month + 1 }}月 </span>
                 <span class="day-diff">{{ info }}</span>
             </div>
             <div class="right-btn-group">
-                <span
-                    ><uni-icons
-                        @click="showViewMenu = !showViewMenu"
-                        type="list"
-                        size="24"
-                    ></uni-icons
-                ></span>
+                <span><uni-icons @click="showViewMenu = !showViewMenu" type="list" size="24"></uni-icons></span>
                 <span><uni-icons type="more-filled" size="24"></uni-icons></span>
             </div>
         </div>
@@ -65,11 +57,9 @@ export default {
         info() {
             let year = this.$store.state.year;
             let month = this.$store.state.month;
-            let day = this.$store.state.selectDate.day;
+            let day = this.$store.state.day;
 
-            let dayDiff = Math.floor(
-                (new Date(year, month, day) - this.$store.state.today) / 86400000
-            );
+            let dayDiff = Math.floor((new Date(year, month, day) - this.$store.state.today) / 86400000);
             if (dayDiff > 0) {
                 return `${dayDiff}天后`;
             } else if (dayDiff < 0) {

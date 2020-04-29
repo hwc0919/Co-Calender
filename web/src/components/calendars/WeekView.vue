@@ -43,6 +43,18 @@ export default {
         return {
             calendar: calendar
         };
+    },
+    methods: {
+        handleTest(data) {
+            console.log('test');
+            console.log(data.msg);
+        }
+    },
+    mounted() {
+        uni.$on('test', this.handleTest);
+    },
+    beforeDestroy() {
+        uni.$off('test');
     }
 };
 </script>

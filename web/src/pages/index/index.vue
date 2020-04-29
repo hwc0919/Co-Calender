@@ -10,12 +10,7 @@
         <day-view v-else-if="activeViewID === 2"></day-view>
 
         <div class="corner-btn-group">
-            <button
-                v-show="!$store.state.selectDate.isToday()"
-                @click="$store.commit('selectToday')"
-                class="today-btn"
-                type="primary"
-            >
+            <button v-show="!$store.getters.isToday" @click="uniEmitSelectToday" class="today-btn" type="primary">
                 今
             </button>
             <button class="create-btn" type="default">
@@ -48,6 +43,9 @@ export default {
     methods: {
         switchView(id) {
             this.activeViewID = id;
+        },
+        uniEmitSelectToday() {
+            uni.$emit('select-today');
         }
     },
     computed: {

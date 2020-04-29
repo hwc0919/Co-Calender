@@ -4,7 +4,6 @@
             'day-block',
             { 'other-month-day': !inThisMonth, 'select-day': selected, 'select-today': selected && isToday }
         ]"
-        @click="handleClick"
     >
         <span class="hasSchedule"></span>
         <span class="date">{{ dateObj.day }}</span>
@@ -16,23 +15,17 @@
 import { DateObj } from '../../static/js/DateObj';
 export default {
     name: 'DayBlock',
-    props: ['dateObj'],
-    methods: {
-        handleClick() {
-            this.$store.commit('selectDate', this.dateObj);
-        }
-    },
+    props: ['dateObj', 'month'],
+    methods: {},
     computed: {
         selected() {
-            return (
-                this.$store.state.selectDate.day === this.dateObj.day && this.$store.state.month === this.dateObj.month
-            );
+            return this.$store.state.day === this.dateObj.day && this.$store.state.month === this.dateObj.month;
         },
         isToday() {
             return this.dateObj.equals(new DateObj(new Date()));
         },
         inThisMonth() {
-            return this.dateObj.month === this.$store.state.selectDate.month;
+            return this.dateObj.month === this.month;
         }
     }
 };
@@ -76,5 +69,4 @@ export default {
 .other-month-day {
     color: $color-shooting-breeze;
 }
-
 </style>
