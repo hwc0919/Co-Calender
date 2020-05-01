@@ -123,7 +123,7 @@ class User(db.Model):
             db.session.commit()
             return True
         except Exception as ex:
-            db.rollback()
+            db.session.rollback()
             traceback.print_exc()
             return False
 

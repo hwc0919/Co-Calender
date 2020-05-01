@@ -4,6 +4,7 @@ export default {
     onLaunch: function() {
         this.$store.commit('initCalendar');
         console.log('App Launch');
+        console.log(this.$store.state.c.year);
     },
     onShow: function() {
         console.log('App Show');

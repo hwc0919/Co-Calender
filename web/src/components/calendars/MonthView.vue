@@ -48,17 +48,18 @@ export default {
             .select('#month');
         return {
             calendars: [
-                this.$store.getters.getMonthCalendar(this.$store.state.year, this.$store.state.month - 1),
-                this.$store.getters.getMonthCalendar(this.$store.state.year, this.$store.state.month),
-                this.$store.getters.getMonthCalendar(this.$store.state.year, this.$store.state.month + 1)
+                this.$store.getters.getMonthCalendar(this.$store.state.c.year, this.$store.state.c.month - 1),
+                this.$store.getters.getMonthCalendar(this.$store.state.c.year, this.$store.state.c.month),
+                this.$store.getters.getMonthCalendar(this.$store.state.c.year, this.$store.state.c.month + 1)
             ],
             query: query,
             x: 0,
+            oldX: 0,
             startX: 0,
+            startY: 0,
             startT: 0,
-            dragging: false,
-            showDragging: false,
-            canDrag: true,
+            scrollX: false,
+            scrollY: false,
             timeout: null,
             scrollOver: false
         };
@@ -82,7 +83,7 @@ export default {
             });
         },
         resetCalendar() {
-            if (this.calendars[1][1][0].month !== this.$store.state.month) {
+            if (this.calendars[1][1][0].month !== this.$store.state.c.month) {
                 console.log('reset');
                 this.$set(this.calendars, 0, this.$store.getters.getMonthCalendar(this.year, this.month - 1));
                 this.$set(this.calendars, 1, this.$store.getters.getMonthCalendar(this.year, this.month));
@@ -117,26 +118,38 @@ export default {
         /*             Handle Scroll                */
         /* **************************************** */
         handleTouchStart(event) {
+            this.scrollX = this.scrollY = false;
             clearTimeout(this.timeout);
             this.query
                 .boundingClientRect(data => {
                     this.x = data.left + uni.upx2px(750);
                 })
                 .exec();
+            this.oldX = this.x;
             this.scrollOver = false;
             this.startX = event.touches[0].clientX;
+            this.startY = event.touches[0].clientY;
             this.startT = new Date();
-            this.dragging = true;
         },
         handleTouchMove(event) {
-            if (this.dragging) {
-                let curX = event.touches[0].clientX;
-                this.x = curX - this.startX;
+            let curX = event.touches[0].clientX;
+            let curY = event.touches[0].clientY;
+            if (!this.scrollX && !this.scrollY) {
+                if (this.x !== 0 || Math.abs(curX - this.startX) > Math.abs(curY - this.startY)) {
+                    this.scrollX = true;
+                } else {
+                    this.scrollY = true;
+                }
+            } else if (this.scrollX) {
+                console.log('scrollx');
+                this.x = this.oldX + curX - this.startX;
+            } else if (this.scrollY) {
+                console.log('scrolly');
             }
         },
         handleTouchEnd() {
-            if (this.dragging) {
-                this.dragging = false;
+            if (this.scrollX) {
+                this.scrollX = false;
                 let velocity = this.x / (new Date() - this.startT);
                 if (this.x < uni.upx2px(-750 * 0.75) || velocity < -0.5) {
                     this.finishSlide(1);
@@ -144,18 +157,21 @@ export default {
                 } else if (this.x > uni.upx2px(750 * 0.75) || velocity > 0.5) {
                     this.finishSlide(-1);
                     this.$store.commit('switchMonth', -1);
-                } else if (this.x !== 0) {
-                    this.finishSlide(0);
-                }
+                } else if (this.x !== 0) this.finishSlide(0);
+            } else if (this.scrollY) {
+                this.scrollY = false;
+            } else {
+                console.log('Nothing scrolling...');
+                if (this.x !== 0) this.finishSlide(0);
             }
         }
     },
     computed: {
         year() {
-            return this.$store.state.year;
+            return this.$store.state.c.year;
         },
         month() {
-            return this.$store.state.month;
+            return this.$store.state.c.month;
         },
         left() {
             return this.x - uni.upx2px(750) + 'px';
@@ -163,7 +179,7 @@ export default {
     },
     mounted() {
         uni.$on('select-today', () => {
-            this.selectDate(this.$store.state.todayObj);
+            this.selectDate(this.$store.state.c.todayObj);
         });
     },
     beforeDestroy() {

@@ -12,7 +12,7 @@ let day = today.getDate();
 let dayOfWeek = today.getDay();
 today = new Date(year, month, day);
 
-export const store = new Vuex.Store({
+const calendarStore = {
     state: {
         today: today,
         todayObj: new DateObj(today),
@@ -25,6 +25,9 @@ export const store = new Vuex.Store({
     getters: {
         getMonthCalendar: (state) => (year, month) => {
             console.log('get', year, month);
+            if (year === undefined) year = state.year;
+            if (month === undefined) month = state.month;
+
             while (month > 11) {
                 month -= 12;
                 year++;
@@ -39,12 +42,20 @@ export const store = new Vuex.Store({
             return state.calendars[year][month];
         },
         isToday(state) {
-            return state.day === state.todayObj.day && state.month === state.todayObj.month && state.year === state.todayObj.year;
+            return (
+                state.day === state.todayObj.day &&
+                state.month === state.todayObj.month &&
+                state.year === state.todayObj.year
+            );
         }
     },
     mutations: {
         initCalendar(state) {
-            Object.assign(state.calendars, {}, CalendarTool.calThreeYearCalendar(state.year));
+            Object.assign(
+                state.calendars,
+                {},
+                CalendarTool.calThreeYearCalendar(state.year)
+            );
         },
         switchMonth(state, direction) {
             if (direction < 0) {
@@ -73,5 +84,25 @@ export const store = new Vuex.Store({
             state.day = state.todayObj.day;
             state.dayOfWeek = state.todayObj.dayOfWeek;
         }
+    }
+};
+
+const userStore = {
+    state: {
+        username: '尚未登录',
+        login: false
+    },
+    mutations: {
+        setUsername(state, username) {
+            state.username = username;
+            state.login = true;
+        }
+    }
+};
+
+export const store = new Vuex.Store({
+    modules: {
+        c: calendarStore,
+        u: userStore
     }
 });

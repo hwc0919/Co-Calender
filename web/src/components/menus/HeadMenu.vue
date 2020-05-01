@@ -1,16 +1,16 @@
 <template>
-    <div :class="['header', { 'header-transition': showViewMenu }]">
+    <div :class="['header', { 'header-animation': showViewMenu }]">
         <div class="header-1">
             <div class="left-info-group">
-                <span class="year-month"> {{ $store.state.year }}年{{ $store.state.month + 1 }}月 </span>
+                <span class="year-month"> {{ $store.state.c.year }}年{{ $store.state.c.month + 1 }}月 </span>
                 <span class="day-diff">{{ info }}</span>
             </div>
             <div class="right-btn-group">
-                <span><uni-icons @click="showViewMenu = !showViewMenu" type="list" size="24"></uni-icons></span>
-                <span><uni-icons type="more-filled" size="24"></uni-icons></span>
+                <span><uni-icons type="list" size="24" @click="showViewMenu = !showViewMenu"></uni-icons></span>
+                <span><uni-icons type="more-filled" size="24" @click="$emit('show-drawer')"></uni-icons></span>
             </div>
         </div>
-        <div :class="['view-menu', { 'view-menu-transition': showViewMenu }]">
+        <div :class="['view-menu', { 'view-menu-animation': showViewMenu }]">
             <button
                 v-for="(name, index) in viewBtns"
                 :class="{ 'active-view': activeViewID === index }"
@@ -55,11 +55,11 @@ export default {
     },
     computed: {
         info() {
-            let year = this.$store.state.year;
-            let month = this.$store.state.month;
-            let day = this.$store.state.day;
+            let year = this.$store.state.c.year;
+            let month = this.$store.state.c.month;
+            let day = this.$store.state.c.day;
 
-            let dayDiff = Math.floor((new Date(year, month, day) - this.$store.state.today) / 86400000);
+            let dayDiff = Math.floor((new Date(year, month, day) - this.$store.state.c.today) / 86400000);
             if (dayDiff > 0) {
                 return `${dayDiff}天后`;
             } else if (dayDiff < 0) {
@@ -73,8 +73,10 @@ export default {
 
 <style lang="scss" scoped>
 .header {
-    height: 80upx;
-    padding: 10upx 40upx;
+    height: 140upx;
+    width: 100%;
+    padding: 40upx;
+    box-sizing: border-box;
     transform-origin: top;
     transition: all 0.3s ease;
 }
@@ -142,11 +144,11 @@ button {
     color: $uni-color-primary;
 }
 
-.view-menu-transition {
+.view-menu-animation {
     transform: scaleY(1);
 }
 
-.header-transition {
-    height: 180upx;
+.header-animation {
+    height: 240upx;
 }
 </style>

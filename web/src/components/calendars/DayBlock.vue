@@ -19,7 +19,7 @@ export default {
     methods: {},
     computed: {
         selected() {
-            return this.$store.state.day === this.dateObj.day && this.$store.state.month === this.dateObj.month;
+            return this.$store.state.c.day === this.dateObj.day && this.$store.state.c.month === this.dateObj.month;
         },
         isToday() {
             return this.dateObj.equals(new DateObj(new Date()));
