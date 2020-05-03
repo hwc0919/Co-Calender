@@ -1,5 +1,7 @@
 <template>
     <view class="content">
+        <div class="status-bar-placeholder"></div>
+
         <!-- HeadMenu, show year, month, dayOfWeek and sub-menus -->
         <head-menu
             class="head-menu"
@@ -17,8 +19,9 @@
         <day-view class="calendar-view" v-else-if="activeViewID === 2"></day-view>
 
         <!-- Right drawer memu -->
-        <uni-drawer ref="drawer" :mode="'right'" :width="160">
-            <div class="uni-title" @click="handleUsernameClick">{{ $store.state.u.username }}</div>
+        <uni-drawer class="right-drawer" ref="drawer" :mode="'right'" :width="160">
+            <div class="status-bar-placeholder drawer-top-placeholder"></div>
+            <div class="uni-title" @click="handleUsernameClick">{{ $store.state.u.username || '未登录' }}</div>
         </uni-drawer>
 
         <!-- bottom-right button group -->
@@ -68,7 +71,7 @@ export default {
         showDrawer() {
             this.$refs.drawer.open();
         },
-        // Navigate to login
+        // Navigate to login or logout
         handleUsernameClick() {
             if (!this.$store.state.u.login) {
                 console.log('redirect to login');
@@ -78,39 +81,50 @@ export default {
                 });
             } else {
                 console.log('already login');
+                uni.showModal({
+                    title: '提示',
+                    content: '退出登录?',
+                    success: ({ confirm, cancel }) => {
+                        if (confirm) this.$store.commit('logout');
+                    }
+                });
             }
         }
-    },
-    computed: {
-        // activeView() {
-        //     return this.availViews[this.activeViewID];
-        // }
     }
 };
 </script>
 
 <style lang="scss" scope>
+.status-bar-placeholder {
+    height: var(--status-bar-height);
+    width: 100%;
+}
+
+.drawer-top-placeholder {
+    margin-top: 40rpx;
+}
+
 .content {
     text-align: center;
     height: 100%;
 }
 
 .corner-btn-group {
-    position: absolute;
+    position: fixed;
     display: flex;
-    bottom: 40upx;
-    right: 40upx;
+    bottom: 40rpx;
+    right: 40rpx;
 }
 
 .corner-btn-group button {
-    width: 100upx;
+    width: 100rpx;
     padding: 0;
-    height: 100upx;
+    height: 100rpx;
     text-align: center;
     border-radius: 50%;
-    line-height: 100upx;
-    font-size: 45upx;
-    margin-left: 40upx;
+    line-height: 100rpx;
+    font-size: 45rpx;
+    margin-left: 40rpx;
 }
 
 .corner-btn-group button::after {
@@ -118,11 +132,11 @@ export default {
 }
 
 .today-btn {
-    box-shadow: 0 0 5upx $uni-color-primary;
+    box-shadow: 0 0 5rpx $uni-color-primary;
 }
 
 .create-btn {
     background-color: white;
-    box-shadow: 0 0 5upx $uni-text-color-grey;
+    box-shadow: 0 0 5rpx $uni-text-color-grey;
 }
 </style>

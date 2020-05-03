@@ -10,6 +10,14 @@ app = create_app(os.getenv('FLASK_CONFIG') or 'development')
 migrate = Migrate(app, db)
 
 
+@app.after_request
+def allow_cross_origin(response):
+    print('add allow origin')
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type,XFILENAME,XFILECATEGORY,XFILESIZE"
+    return response
+
+
 @app.shell_context_processor
 def make_shell_context():
     return dict(db=db, User=User, Role=Role,

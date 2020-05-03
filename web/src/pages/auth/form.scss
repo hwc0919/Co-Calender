@@ -1,0 +1,38 @@
+.login-view-wrapper {
+    padding: 50upx;
+}
+
+.input-group {
+    display: flex;
+    justify-content: space-between;
+    height: 80rpx;
+    line-height: 80rpx;
+    margin-bottom: 20rpx;
+}
+
+.input-group label {
+    flex: 25%;
+    height: 100%;
+}
+
+.input-group input {
+    flex: 75%;
+    height: 100%;
+    padding: 20rpx;
+    border: 1px solid $color-shooting-breeze;
+    border-radius: 16rpx;
+}
+
+.login-form button,
+.register-form button {
+    height: 80rpx;
+    line-height: 80rpx;
+    margin: 40rpx 0;
+}
+
+.navi {
+    text-align: right;
+    font-size: 30rpx;
+    text-decoration-line: underline;
+    text-decoration-style: dotted;
+}

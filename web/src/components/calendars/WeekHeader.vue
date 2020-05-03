@@ -25,7 +25,7 @@ div {
 
 span {
     display: inline-block;
-    width: $day-cell-width;
+    width: $day-block-width;
     font-size: 24upx;
 }
 </style>

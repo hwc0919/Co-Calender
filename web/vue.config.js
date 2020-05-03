@@ -14,15 +14,15 @@ module.exports = {
             ]
         }
     },
-    // publicPath: 'http://localhost:5000',
 
     devServer: {
         proxy: {
             '/api': {
-                target: 'http://localhost:5000',
+                target: 'http://192.168.0.105:5000',
                 pathRewrite: {
                     '/api': ''
-                }
+                },
+                changeOrigin: true
             }
         }
     }

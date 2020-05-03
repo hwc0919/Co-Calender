@@ -6,13 +6,19 @@
             ref="month"
             :class="['month-view-content', { 'scroll-over-animation': scrollOver }]"
             @touchstart="handleTouchStart"
-            @touchmove="handleTouchMove"
+            @touchmove.prevent="handleTouchMove"
             @touchend="handleTouchEnd"
+            @touchcancel="handleTouchEnd"
             :style="{ left: left }"
         >
             <div class="one-month" v-for="calendar in calendars" :key="`calendar-${calendar[1][0].month}`">
-                <div v-for="(week, ind1) in calendar" :key="`calendar-${calendar[1][0].month}-${ind1}`">
-                    <div class="one-week">
+                <div
+                    class="one-week"
+                    :style="{ height: weekHeight }"
+                    v-for="(week, ind1) in calendar"
+                    :key="`calendar-${calendar[1][0].month}-${ind1}`"
+                >
+                    <div class="one-week-days">
                         <day-block
                             v-for="(dateObj, ind2) in week"
                             :key="`calendar-${calendar[1][0].month}-${ind1}-${ind2}`"
@@ -22,7 +28,7 @@
                         >
                         </day-block>
                     </div>
-                    <div class="one-week-detail"></div>
+                    <div class="one-week-detail" :style="{ height: weekDetailHeight }"></div>
                 </div>
             </div>
         </div>
@@ -61,11 +67,23 @@ export default {
             scrollX: false,
             scrollY: false,
             timeout: null,
-            scrollOver: false
+            scrollOver: false,
+            showDetail: false
         };
     },
     methods: {
-        finishSlide(direction) {
+        handleScrollX(direction) {
+            /*
+                If direction === 0, go back to current month
+                If direction === -1, go to previous month
+                If direction === 1, go to next month
+
+                When direction === 0, reset x to 0 with animation.
+                When direction !== 0, first rotate `this.calandars`,
+                finish scroll animation, then update `this.calendars`
+            */
+            console.log('Handle scroll X', direction);
+
             let targetX = direction * uni.upx2px(750);
             if (direction === 1) {
                 this.calendars.push(this.calendars.shift());
@@ -82,6 +100,17 @@ export default {
                 }, 300);
             });
         },
+
+        handleScrollY(direction) {
+            /*
+                If direction === -1, close week-details
+                If direction === 1, open week-details
+            */
+            console.log('Handle scroll Y', direction);
+            if (direction === 1) this.showDetail = true;
+            else if (direction === -1) this.showDetail = false;
+        },
+
         resetCalendar() {
             if (this.calendars[1][1][0].month !== this.$store.state.c.month) {
                 console.log('reset');
@@ -98,7 +127,7 @@ export default {
                 (this.year === dateObj.year && this.month === dateObj.month - 1) ||
                 (this.year === dateObj.year - 1 && this.month === 11 && dateObj.year === 0)
             ) {
-                this.finishSlide(1);
+                this.handleScrollX(1);
                 this.$store.commit('selectDate', dateObj);
             }
             // Select date of previous month
@@ -106,7 +135,7 @@ export default {
                 (this.year === dateObj.year && this.month === dateObj.month + 1) ||
                 (this.year === dateObj.year + 1 && this.month === 0 && dateObj.year === 11)
             ) {
-                this.finishSlide(-1);
+                this.handleScrollX(-1);
                 this.$store.commit('selectDate', dateObj);
             } else {
                 this.$store.commit('selectDate', dateObj);
@@ -118,26 +147,31 @@ export default {
         /*             Handle Scroll                */
         /* **************************************** */
         handleTouchStart(event) {
+            console.log('touch start');
             this.scrollX = this.scrollY = false;
             clearTimeout(this.timeout);
             this.query
                 .boundingClientRect(data => {
                     this.x = data.left + uni.upx2px(750);
+                    this.oldX = this.x;
                 })
                 .exec();
-            this.oldX = this.x;
             this.scrollOver = false;
             this.startX = event.touches[0].clientX;
             this.startY = event.touches[0].clientY;
             this.startT = new Date();
         },
         handleTouchMove(event) {
+            console.log('touch move');
             let curX = event.touches[0].clientX;
             let curY = event.touches[0].clientY;
+            console.log('deltaX:', Math.abs(curX - this.startX), 'deltaY:', Math.abs(curY - this.startY));
             if (!this.scrollX && !this.scrollY) {
-                if (this.x !== 0 || Math.abs(curX - this.startX) > Math.abs(curY - this.startY)) {
+                if (this.x !== 0 || Math.abs(curX - this.startX) >= Math.abs(curY - this.startY)) {
+                    console.log('set scroll X');
                     this.scrollX = true;
                 } else {
+                    console.log('set scroll Y');
                     this.scrollY = true;
                 }
             } else if (this.scrollX) {
@@ -147,22 +181,25 @@ export default {
                 console.log('scrolly');
             }
         },
-        handleTouchEnd() {
+        handleTouchEnd(event) {
+            console.log(event);
             if (this.scrollX) {
                 this.scrollX = false;
                 let velocity = this.x / (new Date() - this.startT);
                 if (this.x < uni.upx2px(-750 * 0.75) || velocity < -0.5) {
-                    this.finishSlide(1);
+                    this.handleScrollX(1);
                     this.$store.commit('switchMonth', 1);
                 } else if (this.x > uni.upx2px(750 * 0.75) || velocity > 0.5) {
-                    this.finishSlide(-1);
+                    this.handleScrollX(-1);
                     this.$store.commit('switchMonth', -1);
-                } else if (this.x !== 0) this.finishSlide(0);
+                } else if (this.x !== 0) this.handleScrollX(0);
             } else if (this.scrollY) {
                 this.scrollY = false;
+                let curY = event.changedTouches[0].clientY;
+                this.handleScrollY(curY < this.startY ? -1 : 1);
             } else {
                 console.log('Nothing scrolling...');
-                if (this.x !== 0) this.finishSlide(0);
+                if (this.x !== 0) this.handleScrollX(0);
             }
         }
     },
@@ -175,6 +212,14 @@ export default {
         },
         left() {
             return this.x - uni.upx2px(750) + 'px';
+        },
+        weekHeight() {
+            if (this.showDetail) return '160rpx';
+            else return '100rpx';
+        },
+        weekDetailHeight() {
+            if (this.showDetail) return '60rpx';
+            else return 0;
         }
     },
     mounted() {
@@ -203,10 +248,10 @@ export default {
     padding: 0 10upx;
 }
 
-.one-week {
+.one-week-days {
     display: flex;
     justify-content: space-evenly;
-    padding: 10upx 0;
+    height: $day-block-width;
 }
 
 .scroll-over-animation {
@@ -214,8 +259,13 @@ export default {
     transition: left 0.3s ease-out;
 }
 
+.one-week {
+    height: $day-block-width;
+    margin: 10upx 0;
+    transition: height 0.3s;
+}
+
 .one-week-detail {
-    height: 100upx;
-    background-color: $color-city-light;
+    transition: height 0.3s;
 }
 </style>

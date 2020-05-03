@@ -37,8 +37,8 @@ export default {
     justify-content: flex-start;
     flex-direction: column;
     border-radius: 50%;
-    width: $day-cell-width;
-    height: $day-cell-height;
+    width: $day-block-width;
+    height: $day-block-height;
 }
 
 .day-block span {
@@ -46,15 +46,15 @@ export default {
 }
 
 .day-block span:nth-child(1) {
-    height: 20%;
+    flex: 2;
 }
 
 .day-block span:nth-child(2) {
-    height: 40%;
+    flex: 3;
 }
 
 .day-block span:nth-child(3) {
-    height: 40%;
+    flex: 3;
 }
 
 .select-day {

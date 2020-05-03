@@ -60,9 +60,6 @@ export default {
 </script>
 
 <style lang="scss" scope>
-.week-view-wrapper {
-}
-
 .one-week {
     display: flex;
     justify-content: space-evenly;

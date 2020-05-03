@@ -108,6 +108,17 @@ class User(db.Model):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    @staticmethod
+    def add_user(user):
+        try:
+            db.session.add(user)
+            db.session.commit()
+            return True
+        except Exception as ex:
+            traceback.print_exc()
+            db.session.rollback()
+            return False
+
     def has_friend(self, user):
         uid = user if isinstance(user, int) else user.uid
         return self.friends.filter_by(to_uid=uid).first() is not None

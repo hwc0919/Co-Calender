@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import timedelta
 
 import mysql.connector
 
@@ -16,6 +17,7 @@ except Exception:
 
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or os.urandom(20)
+    PERMANENT_SESSION_LIFETIME = timedelta(days=60)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://{username}:{passwd}@{host}:{port}/{dbname}?charset=utf8mb4'.format(
         username=os.environ.get('DBUSER'),
