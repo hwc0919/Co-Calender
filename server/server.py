@@ -59,3 +59,7 @@ def add_test_data():
         if not u1.has_friend(u2):
             u1.add_friend(u2)
     print('Add friends.')
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0')

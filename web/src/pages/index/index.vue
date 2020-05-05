@@ -21,7 +21,7 @@
         <!-- Right drawer memu -->
         <uni-drawer class="right-drawer" ref="drawer" :mode="'right'" :width="160">
             <div class="status-bar-placeholder drawer-top-placeholder"></div>
-            <div class="uni-title" @click="handleUsernameClick">{{ $store.state.u.username || '未登录' }}</div>
+            <div class="uni-title" @click="clickUsername">{{ $store.state.u.username || '未登录' }}</div>
         </uni-drawer>
 
         <!-- bottom-right button group -->
@@ -29,7 +29,7 @@
             <button v-show="!$store.getters.isToday" @click="uniEmitSelectToday" class="today-btn" type="primary">
                 今
             </button>
-            <button class="create-btn" type="default">
+            <button @click="clickCreateSchedule" class="create-btn" type="default">
                 <uni-icons type="plusempty" size="30" color="$uni-color-primary"></uni-icons>
             </button>
         </div>
@@ -72,7 +72,7 @@ export default {
             this.$refs.drawer.open();
         },
         // Navigate to login or logout
-        handleUsernameClick() {
+        clickUsername() {
             if (!this.$store.state.u.login) {
                 console.log('redirect to login');
                 uni.navigateTo({
@@ -89,6 +89,11 @@ export default {
                     }
                 });
             }
+        },
+        clickCreateSchedule() {
+            uni.navigateTo({
+                url: '/pages/create-schedule'
+            });
         }
     }
 };

@@ -17,6 +17,12 @@
             "style": {
                 "navigationBarTitleText": "Register"
             }
+        },
+        {
+            "path": "pages/create-schedule",
+            "style": {
+                "titleNView": false
+            }
         }
     ],
     "globalStyle": {
