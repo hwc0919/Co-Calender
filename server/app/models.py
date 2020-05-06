@@ -263,6 +263,9 @@ class Schedule(db.Model):
     owner_slid = db.Column(db.Integer, db.ForeignKey('schlists.slid'))
     # backref: owner_list
 
+    def to_json(self):
+        return {'title': self.title, 'sdate': self.sdate.isoformat()}
+
 
 class Schlist(db.Model):
     """Model of the schedule lists"""

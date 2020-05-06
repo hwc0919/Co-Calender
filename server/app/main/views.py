@@ -5,9 +5,9 @@ from .. import db
 from . import main
 
 
-@main.route('/', methods=['GET', 'POST'])
-def index():
-    return render_template('index.html', message='Welcome to your Flask App')
+@main.route('/<name>', methods=['GET', 'POST'])
+def index(name):
+    return render_template('index.html', message='Welcome to your Flask App, {}'.format(name))
 
 
 @main.route('/create', methods=['POST'])
@@ -21,3 +21,14 @@ def create():
     db.session.add(schedule)
     db.session.commit()
     return jsonify(dict(success=True, data=None))
+
+
+@main.route('/get-schedules', methods=['GET', 'POST'])
+def get_schedules():
+    data = request.get_json()
+    uid = data.get('uid', None)
+    user = User.query.filter_by(uid=uid).first()
+    if not uid or not user:
+        return jsonify(dict(success=False, message='尚未登录'))
+    schedules = [s.to_json() for s in user.schedules.all()]
+    return jsonify(dict(success=True, data=schedules))

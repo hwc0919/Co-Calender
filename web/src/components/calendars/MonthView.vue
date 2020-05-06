@@ -68,7 +68,8 @@ export default {
             scrollY: false,
             timeout: null,
             scrollOver: false,
-            showDetail: false
+            showDetail: false,
+            scheduleMap: {}
         };
     },
     methods: {
@@ -142,6 +143,8 @@ export default {
                 this.resetCalendar();
             }
         },
+
+        schedulesOnDate() {},
 
         /* **************************************** */
         /*             Handle Scroll                */
@@ -225,6 +228,13 @@ export default {
     mounted() {
         uni.$on('select-today', () => {
             this.selectDate(this.$store.state.c.todayObj);
+        });
+
+        this.$http.post({ url: '/api/get-schedules', name: '获取日程' }).then(data => {
+            console.log('schedules:', data);
+            for (schedule of data) {
+                console.log(schedule);
+            }
         });
     },
     beforeDestroy() {

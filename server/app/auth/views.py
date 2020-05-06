@@ -11,13 +11,14 @@ def register():
     password = request.json.get('password')
     user = User(username=username, password=password)
     if User.add_user(user):
-        return jsonify(dict(success=True, message="注册成功", uid=user.uid, username=username))
+        return jsonify(dict(success=True, message="注册成功", data=dict(uid=user.uid, username=username)))
     else:
         return jsonify(dict(success=False, message="注册失败"))
 
 
 @auth.route('/login', methods=['POST'])
 def login():
+    print(request.json)
     username = request.json.get('username')
     password = request.json.get('password')
     print('username, password:', username, password)
@@ -30,7 +31,7 @@ def login():
     session['username'] = username
     session['uid'] = user.uid
     session.permanent = True
-    return jsonify(dict(success=True, message="登录成功", uid=user.uid, username=username))
+    return jsonify(dict(success=True, message="登录成功", data=dict(uid=user.uid, username=username)))
 
 
 @auth.route('/test', methods=['GET', 'POST'])
